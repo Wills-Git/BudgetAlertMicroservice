@@ -43,6 +43,10 @@ function handleNewBudget(req,res){
 
 function handleNewSpend(req,res){
     const amount = Number(req.query.amount)
+
+    if (!req.query.amount || isNaN(amount)) {
+        return res.status(400).json({ error: "Invalid amount." });
+    }
     const thisID = expenseID
     expenses[thisID] = amount
     expenseID += 1
@@ -51,23 +55,31 @@ function handleNewSpend(req,res){
     spending += amount
     over = spending > budget;
     
-    const response = {spendID: thisID, over: over}
+    const response = {spendID: thisID, budgetState: over}
     return res.status(200).json(response)
 
 }
 
 function updateSpend(req,res){
     let {expenseID, newAmount} = req.body
-    console.log(expenseID, newAmount)
-    expenseID = Number(expenseID)
-    spending -= expenses[expenseID] 
-    expenses[expenseID] = Number(newAmount)
-    spending += Number(newAmount)
-    over = spending > budget
+    expenseID = Number(expenseID);
+    newAmount = Number(newAmount);
 
-    const response = {over: over}
-    return res.status(200).json(response)
+    if (
+        isNaN(expenseID) ||
+        !(expenseID in expenses) ||
+        isNaN(newAmount)
+    ) {
+        return res.status(400).json({ error: "Invalid expense ID or new amount" });
+    }
+    spending -= expenses[expenseID];
+    expenses[expenseID] = newAmount;
+    spending += newAmount;
 
+    const over = spending > budget;
+    const response = { budgetState: over };
+
+    return res.status(200).json(response);
 }
 
 app.listen(PORT, async () => {
