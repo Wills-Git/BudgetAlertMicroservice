@@ -37,8 +37,13 @@ function handleGetExpenses(req,res){
 
 function handleNewBudget(req,res){
     const newBudget = Number(req.query.amount)
+    if (!isNaN(newBudget)) {
     budget = newBudget;
     return res.status(200).send();
+    } else {
+        return res.status(400).json({error:"Invalid budget."})
+    }
+
 }
 
 function handleNewSpend(req,res){
@@ -76,7 +81,7 @@ function updateSpend(req,res){
     expenses[expenseID] = newAmount;
     spending += newAmount;
 
-    const over = spending > budget;
+    over = spending > budget;
     const response = { budgetState: over };
 
     return res.status(200).json(response);
